@@ -10,13 +10,13 @@ AI: gemini cli / antigravity / codex / cloud code
 # 安裝方式
 git clone https://github.com/good1515/ftp-db-agent-skills
 
-整包下載後 放入專案資料夾
+或 整包下載後 放入專案資料夾
 
 專案:
 ./skills/
 
 全域:
-C:\Users\[使用者名稱]\.gemini\antigravity\global_skills\
+C:\Users\\[使用者名稱]\\.gemini\antigravity\global_skills\
 [僅參考 其他請依AI各自說明放置]
 
 # 使用說明:
