@@ -1,0 +1,9 @@
+{
+  "name": "plesk-ftp-deploy-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "basic-ftp": "^5.0.5",
+    "dotenv": "^16.4.5"
+  }
+}
