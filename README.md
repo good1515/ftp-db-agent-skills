@@ -1,5 +1,6 @@
 # 安裝需求
 Node.js v19 up
+git
 
 # 建議環境
 Plesk  
