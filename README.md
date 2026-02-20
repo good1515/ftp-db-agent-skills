@@ -1,3 +1,12 @@
+# 安裝需求
+Node.js V19 UP
+
+# 建議環境
+Plesk
+FTP
+MySQL/MariaDB
+AI: gemini cli / antigravity / codex / cloud code
+
 # 使用說明:
 複製 .env.example 改名為 .env
 填寫 相關連線與部屬設定
@@ -16,7 +25,6 @@ DB_PORT=3306
 DB_USER=your_username
 DB_PASS='your_password' # 避免特殊符號錯誤 請保留單引號
 DB_NAME=your_database_name
-
 
 # FTP 執行部署
 當您準備好將網站上線時，請告訴我：「幫我部署到 Plesk」或「將網站上傳到 FTP」。
