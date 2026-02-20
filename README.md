@@ -16,7 +16,7 @@ git clone https://github.com/good1515/ftp-db-agent-skills
 ./skills/
 
 全域:
-C:\Users\\[使用者名稱]\\.gemini\antigravity\global_skills\
+C:\\Users\\[使用者名稱]\\.gemini\antigravity\global_skills\\
 [僅參考 其他請依AI各自說明放置]
 
 # 使用說明:
