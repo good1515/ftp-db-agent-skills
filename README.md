@@ -1,4 +1,4 @@
-使用說明:
+# 使用說明:
 複製 .env.example 改名為 .env
 填寫 相關連線與部屬設定
 
@@ -7,7 +7,7 @@ FTP_HOST=ftp.your-domain.com
 FTP_USER=your-ftp-username
 FTP_PASSWORD='your-ftp-password' # 避免特殊符號錯誤 請保留單引號
 FTP_PORT=21
-FTP_SECURE=false
+FTP_SECURE=false # Plesk 通常為 true
 FTP_REMOTE_DIR=/httpdocs
 
 # MySQL/MariaDB 連線設定
@@ -16,3 +16,10 @@ DB_PORT=3306
 DB_USER=your_username
 DB_PASS='your_password' # 避免特殊符號錯誤 請保留單引號
 DB_NAME=your_database_name
+
+
+# FTP 執行部署
+當您準備好將網站上線時，請告訴我：「幫我部署到 Plesk」或「將網站上傳到 FTP」。
+
+# DB 使用方式
+對話中提到 「使用/修改 資料庫」
