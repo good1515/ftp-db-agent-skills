@@ -22,7 +22,7 @@ FTP_PASSWORD=your-ftp-password
 FTP_PORT=21
 FTP_SECURE=false # 如果伺服器支援 TLS/SSL，建議設為 true
 FTP_REMOTE_DIR=/httpdocs
-```
+FTP_IGNORE=.git,node_modules,skills,ftp-deploy,ftp-deploy.skill,package-lock.json,README.md,.env
 
 ### 2. 執行部署
 當您準備好將網站上線時，請告訴我：「幫我部署到 Plesk」或「將網站上傳到 FTP」。

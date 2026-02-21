@@ -36,17 +36,8 @@ function getEnvValue(key, fallback) {
     return (process.env[key] || fallback || "").trim();
 }
 
-const ignoreList = [
-    ".git",
-    "node_modules",
-    "skills",
-    "ftp-deploy",
-    "ftp-deploy.skill",
-    "package-lock.json",
-    "README.md",
-    ".env",
-    "migrate.php"
-];
+const defaultIgnores = ".git,node_modules,skills,ftp-deploy,ftp-deploy.skill,package-lock.json,README.md,.env";
+const ignoreList = getEnvValue("FTP_IGNORE", defaultIgnores).split(",").map(item => item.trim());
 
 function shouldIgnore(fileOrDirName, isFile = true) {
     if (ignoreList.includes(fileOrDirName)) return true;
