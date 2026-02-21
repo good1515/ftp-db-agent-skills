@@ -14,6 +14,7 @@ async function createConnection() {
       user: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
+      charset: 'utf8mb4', // 強制使用 UTF-8 編碼
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0

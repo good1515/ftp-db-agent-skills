@@ -39,9 +39,14 @@ FTP_IGNORE=.git,node_modules,skills,ftp-deploy,ftp-deploy.skill,package-lock.jso
 
 ## 注意事項
 
-- **中文亂碼問題 (Windows CMD)**：如果您在執行時發現中文字顯示為亂碼，請在執行指令前輸入 `chcp 65001` 切換編碼至 UTF-8。
-- 請確保已將 `.env` 加入到 `.gitignore` 中，以避免將敏感密碼上傳至 Git 倉庫。
-- 如果部署過程中出現逾時或連線失敗，請檢查 Plesk 的防火牆設定或確認 FTP 帳密是否正確。
+- **中文亂碼處理 (Windows 環境)**：
+  - 本技能已在腳本中加入自動編碼修正（`chcp 65001` 與 `OPTS UTF8 ON`），大部分情況下會自動處理。
+  - **Gemini CLI 自動執行時**：若在 Gemini 對話視窗中看到輸出亂碼，通常是因為 PowerShell 的輸出編碼設定問題。建議在您的 PowerShell 終端機執行：
+    ```powershell
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    ```
+  - **檔案內容亂碼**：請確保您的原始程式碼檔案、`.env` 檔案皆以 **UTF-8 (不帶 BOM)** 格式儲存。
+  - 如果部署過程中出現逾時或連線失敗，請檢查 Plesk 的防火牆設定或確認 FTP 帳密是否正確。
 
 ## 資源與腳本
 

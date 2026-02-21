@@ -3,12 +3,18 @@ const path = require("path");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
-// 針對 Windows CMD 執行 chcp 65001 以支援 UTF-8 輸出
+// 強制設定輸出編碼為 UTF-8
+if (process.stdout.isTTY) {
+    process.stdout.setEncoding('utf8');
+}
+
+// 針對 Windows 環境進行編碼優化
 if (process.platform === "win32") {
     try {
-        execSync("chcp 65001", { stdio: "inherit" });
+        // 設定編碼為 UTF-8 (65001)
+        execSync("chcp 65001", { stdio: "ignore" });
     } catch (e) {
-        // 忽略錯誤，可能是因為環境限制
+        // 忽略錯誤
     }
 }
 
@@ -97,11 +103,19 @@ async function deploy() {
             user,
             password,
             port,
-            secure: true,
+            secure,
             secureOptions: {
                 rejectUnauthorized: false
             }
         });
+
+        // 嘗試強制開啟 UTF8 支援，這對處理中文檔名至關重要
+        try {
+            await client.send("OPTS UTF8 ON");
+            console.log("已啟用 FTP UTF8 支援");
+        } catch (utf8Err) {
+            console.warn("[Warning] 伺服器可能不支援 OPTS UTF8 ON，若檔名亂碼請手動確認伺服器編碼設定。");
+        }
 
         console.log(`連線成功！正在切換至遠端目錄 ${remoteDir}...`);
         await client.ensureDir(remoteDir);

@@ -54,6 +54,16 @@ AI 應透過 `run_shell_command` 在 `skills/mysql-db-manager/scripts/` 目錄�
 - **建立新資料表**: `node execute-query.cjs "CREATE TABLE test (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100))"`
 - **插入資料**: `node execute-query.cjs "INSERT INTO users (username, email) VALUES ('testuser', 'test@example.com')"`
 
+## 注意事項 (編碼處理)
+
+- **中文字元支援**:
+  - 本技能已在連線配置中強制使用 `charset: 'utf8mb4'`，並在 Windows 環境下自動執行 `chcp 65001` 以支援 UTF-8。
+  - **Gemini CLI 自動執行時**: 若在對話視窗中看到資料庫內容顯示為亂碼，建議在 PowerShell 執行：
+    ```powershell
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    ```
+  - **資料庫編碼**: 請確保您的資料庫與資料表本身也設定為 `utf8mb4_unicode_ci` 或 `utf8_general_ci` 以獲得最佳相容性。
+
 ## 資源結構
 
 - `scripts/execute-query.cjs`: 主要執行入口，負責 SQL 執行與格式化輸出。

@@ -1,4 +1,20 @@
 const { createConnection } = require('./db-client.cjs');
+const { execSync } = require("child_process");
+
+// 強制設定輸出編碼為 UTF-8
+if (process.stdout.isTTY) {
+  process.stdout.setEncoding('utf8');
+}
+
+// 針對 Windows 環境進行編碼優化
+if (process.platform === "win32") {
+  try {
+    // 設定編碼為 UTF-8 (65001)
+    execSync("chcp 65001", { stdio: "ignore" });
+  } catch (e) {
+    // 忽略錯誤
+  }
+}
 
 async function main() {
   const sql = process.argv[2];
