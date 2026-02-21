@@ -25,9 +25,53 @@ function getEnvValue(key, fallback) {
     return (process.env[key] || fallback || "").trim();
 }
 
+const ignoreList = [
+    ".git",
+    "node_modules",
+    "skills",
+    "ftp-deploy",
+    "ftp-deploy.skill",
+    "package-lock.json",
+    "README.md",
+    ".env",
+    "migrate.php"
+];
+
+function shouldIgnore(fileOrDirName, isFile = true) {
+    if (ignoreList.includes(fileOrDirName)) return true;
+    if (fileOrDirName.startsWith(".") && fileOrDirName !== ".htaccess") return true;
+    return false;
+}
+
+async function uploadDirRecursive(client, localDirPath, remoteDirPath) {
+    const items = fs.readdirSync(localDirPath);
+    
+    for (const item of items) {
+        const localPath = path.join(localDirPath, item);
+        const remotePath = remoteDirPath + "/" + item;
+        const stats = fs.statSync(localPath);
+        
+        if (shouldIgnore(item, stats.isFile())) {
+            console.log(`[Ignore] ${item}`);
+            continue;
+        }
+        
+        if (stats.isDirectory()) {
+            console.log(`[Dir] 進入目錄: ${item}`);
+            await client.ensureDir(remotePath);
+            await uploadDirRecursive(client, localPath, remotePath);
+            // 回到上一層
+            await client.cd(remoteDirPath);
+        } else {
+            console.log(`[Upload] 上傳檔案: ${item}`);
+            await client.uploadFrom(localPath, item);
+        }
+    }
+}
+
 async function deploy() {
     const client = new ftp.Client();
-    client.ftp.verbose = true;
+    client.ftp.verbose = false; // 關閉 verbose 以免輸出過多
 
     const host = getEnvValue("FTP_HOST", "ftp.your-domain.com");
     const user = getEnvValue("FTP_USER", "your-username");
@@ -38,7 +82,6 @@ async function deploy() {
 
     console.log(`[Debug] 讀取到的 Host: "${host}"`);
     console.log(`[Debug] 讀取到的 User: "${user}"`);
-    console.log(`[Debug] 密碼長度: ${password.length} 個字元`);
 
     if (!host || !user || !password) {
         console.error("錯誤：請在 .env 檔案中設定 FTP_HOST, FTP_USER, FTP_PASSWORD");
@@ -58,28 +101,12 @@ async function deploy() {
             }
         });
 
-        console.log(`連線成功！正在準備上傳至 ${remoteDir}...`);
+        console.log(`連線成功！正在切換至遠端目錄 ${remoteDir}...`);
+        await client.ensureDir(remoteDir);
+        await client.cd(remoteDir);
         
-        const ignoreList = [
-            ".git",
-            "node_modules",
-            "skills",
-            "ftp-deploy",
-            "ftp-deploy.skill",
-            "package-lock.json",
-            "README.md"
-        ];
-
-        await client.uploadFromDir(process.cwd(), remoteDir, (file) => {
-            const fileName = path.basename(file);
-            if (ignoreList.includes(fileName)) {
-                return false;
-            }
-            if (fileName.startsWith(".") && fileName !== ".htaccess") {
-                return false;
-            }
-            return true;
-        });
+        console.log("開始遞迴上傳 (已套用過濾邏輯)...");
+        await uploadDirRecursive(client, process.cwd(), remoteDir);
 
         console.log("部署完成！");
     } catch (err) {
