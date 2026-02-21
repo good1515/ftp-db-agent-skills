@@ -1,6 +1,17 @@
 const ftp = require("basic-ftp");
 const path = require("path");
 const fs = require("fs");
+const { execSync } = require("child_process");
+
+// 針對 Windows CMD 執行 chcp 65001 以支援 UTF-8 輸出
+if (process.platform === "win32") {
+    try {
+        execSync("chcp 65001", { stdio: "inherit" });
+    } catch (e) {
+        // 忽略錯誤，可能是因為環境限制
+    }
+}
+
 require("dotenv").config({ path: path.join(process.cwd(), ".env") });
 
 // 優先從 .env 原始檔案中手動提取，以防 dotenv 誤判 # 為註解
