@@ -17,14 +17,22 @@ if (process.platform === "win32") {
 }
 
 async function main() {
-  const sql = process.argv[2];
+  let envType = 'MAIN';
+  let sql = process.argv[2];
+
+  // 檢查是否提供了特定的環境關鍵字作為第一個參數
+  const envKeywords = ['MAIN', 'TEST', 'DEV'];
+  if (sql && envKeywords.includes(sql.toUpperCase())) {
+    envType = sql.toUpperCase();
+    sql = process.argv[3];
+  }
   
   if (!sql) {
-    console.error('請提供 SQL 指令。例如: node execute-query.cjs "SELECT * FROM users LIMIT 5"');
+    console.error('請提供 SQL 指令。例如:\n  node execute-query.cjs "SELECT * FROM users" (預設 MAIN)\n  node execute-query.cjs TEST "SELECT * FROM users"');
     process.exit(1);
   }
 
-  const pool = await createConnection();
+  const pool = await createConnection(envType);
   
   try {
     const [rows, fields] = await pool.execute(sql);
@@ -32,13 +40,13 @@ async function main() {
     // 如果是 SELECT 語句，通常回傳結果陣列
     if (Array.isArray(rows)) {
       if (rows.length === 0) {
-        console.log('查詢成功：沒有符合條件的資料。');
+        console.log(`[${envType}] 查詢成功：沒有符合條件的資料。`);
       } else {
         const count = rows.length;
         const limit = 50;
         const results = rows.slice(0, limit);
         
-        console.log(`查詢成功：共找到 ${count} 筆資料 (顯示前 ${results.length} 筆)：`);
+        console.log(`[${envType}] 查詢成功：共找到 ${count} 筆資料 (顯示前 ${results.length} 筆)：`);
         console.log(JSON.stringify(results, null, 2));
         
         if (count > limit) {
@@ -48,11 +56,11 @@ async function main() {
       }
     } else {
       // 如果是 INSERT/UPDATE/DELETE，通常回傳一個 ResultSetHeader 物件
-      console.log('執行成功：');
+      console.log(`[${envType}] 執行成功：`);
       console.log(JSON.stringify(rows, null, 2));
     }
   } catch (error) {
-    console.error('執行 SQL 時發生錯誤：');
+    console.error(`[${envType}] 執行 SQL 時發生錯誤：`);
     console.error(error.message);
     process.exit(1);
   } finally {

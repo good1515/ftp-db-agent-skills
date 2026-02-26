@@ -12,30 +12,40 @@ description: 用於連接與操作 MySQL 或 MariaDB 資料庫。支援執行 SQ
 在使用此技能前，請確保已在技能目錄下的 `scripts/` 中安裝了必要套件 (`mysql2`, `dotenv`)，並且已正確設定環境變數。
 
 ### 1. 設定連線資訊
-請在 `skills/mysql-db-manager/` 目錄下建立 `.env` 檔案（可參考 `assets/.env.example`）：
+請在技能目錄下，或是專案根目錄下的 `.env` 檔案中設定以下變數（留白則代表該環境不開放）：
+
 ```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=您的帳號
-DB_PASS=您的密碼
-DB_NAME=您的資料庫名稱
+# 主要環境 (MAIN)
+DB_MAIN_HOST=localhost
+DB_MAIN_PORT=3306
+DB_MAIN_USER=您的帳號
+DB_MAIN_PASS=您的密碼
+DB_MAIN_NAME=您的資料庫名稱
+
+# 測試環境 (TEST) - 可選
+DB_TEST_HOST=
+...
+
+# 開發環境 (DEV) - 可選
+DB_DEV_HOST=
+...
 ```
 
 ### 2. 核心功能與指令
 
 AI 應透過 `run_shell_command` 在 `skills/mysql-db-manager/scripts/` 目錄下執行以下指令：
 
-- **執行 SQL 查詢**:
+- **執行 SQL 查詢 (預設為 MAIN)**:
   ```bash
   node execute-query.cjs "SELECT * FROM users LIMIT 5"
   ```
-- **查看資料表結構**:
+- **指定環境執行 (例如 TEST)**:
   ```bash
-  node execute-query.cjs "DESCRIBE users"
+  node execute-query.cjs TEST "DESCRIBE users"
   ```
 - **更新資料**:
   ```bash
-  node execute-query.cjs "UPDATE users SET status = 'active' WHERE id = 1"
+  node execute-query.cjs DEV "UPDATE users SET status = 'active' WHERE id = 1"
   ```
 
 ## 安全規範 (重要)
