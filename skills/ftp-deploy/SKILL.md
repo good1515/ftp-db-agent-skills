@@ -1,54 +1,70 @@
----
+﻿---
 name: ftp-deploy
-description: 將網站檔案同步部署到 Plesk FTP 伺服器上的 httpdocs 目錄。使用時機包括專案開發完成、需要更新伺服器上的網頁內容，或是使用者要求將網站上線。此技能會讀取 .env 檔案中的 FTP 設定，並自動過濾冗餘檔案。
+description: 當使用者要把目前專案透過 FTP 部署到 Plesk 或傳到遠端網站目錄時使用。適用於「部署到 Plesk」、「上傳到 httpdocs」、「用 FTP 發佈網站」、「設定 .env 後執行 FTP 上傳」這類需求。此 skill 使用 `scripts/deploy.cjs`，依 `.env` 內的 FTP 設定，將目前工作目錄遞迴上傳到遠端 `httpdocs` 或指定資料夾。
 ---
 
-# Plesk FTP 部署工具
+# FTP 部署到 Plesk
 
-## 概觀
+這個 skill 用於把目前專案透過 FTP 上傳到 Plesk 網站空間。
 
-此技能專為使用 Plesk 管理面板的網站開發者設計。它能協助您快速、安全地將本地專案檔案同步到伺服器的 `httpdocs` 目錄，省去手動開啟 FTP 用戶端的繁瑣步驟。
+優先在這些情況使用：
+- 使用者明確提到 `Plesk`
+- 使用者要部署到 `httpdocs`
+- 使用者要用 `FTP` 上傳目前網站
+- 專案內已有 `.env`、FTP 帳號，或提到 FTP 主機帳密
 
-## 快速入門
+不要在這些情況使用：
+- 使用者要的是 SSH、Git、rsync、CI/CD、Docker 或雲端平台部署
+- 使用者只是在問網站程式碼問題，沒有要部署
 
-### 1. 設定環境變數
-請在專案根目錄建立 `.env` 檔案，或從 `assets/` 中的 `.env.example` 複製。
+## 執行方式
 
-範例內容：
+1. 確認專案根目錄有 `.env`。
+2. 如果沒有 `.env`，先參考 [assets/.env.example](assets/.env.example) 建立。
+3. 確認 `.env` 內至少有下列欄位：
+
 ```env
 FTP_HOST=ftp.your-domain.com
 FTP_USER=your-ftp-username
 FTP_PASSWORD=your-ftp-password
 FTP_PORT=21
-FTP_SECURE=false # 如果伺服器支援 TLS/SSL，建議設為 true
+FTP_SECURE=false
 FTP_REMOTE_DIR=/httpdocs
-FTP_IGNORE=.git,node_modules,skills,ftp-deploy,ftp-deploy.skill,package-lock.json,README.md,.env
+```
 
-### 2. 執行部署
-當您準備好將網站上線時，請告訴我：「幫我部署到 Plesk」或「將網站上傳到 FTP」。
+4. 在要部署的專案根目錄執行：
 
-## 核心功能
+```powershell
+node scripts/deploy.cjs
+```
 
-- **自動同步**：僅上傳有變動的檔案，減少傳輸頻寬與時間。
-- **檔案過濾**：自動排除以下不必要的檔案：
-  - `.git/`
-  - `node_modules/`
-  - `.env` (包含敏感資訊)
-  - `ftp-deploy` (技能目錄本身)
-- **安全傳輸**：支援透過 `FTP_SECURE=true` 進行加密連線。
+5. 如果使用者只要你協助檢查，不要直接部署；先檢查 `.env`、遠端目錄與忽略清單。
 
-## 注意事項
+## 這個 skill 已知會忽略的內容
 
-- **中文亂碼處理 (Windows 環境)**：
-  - 本技能已在腳本中加入自動編碼修正（`chcp 65001` 與 `OPTS UTF8 ON`），大部分情況下會自動處理。
-  - **Gemini CLI 自動執行時**：若在 Gemini 對話視窗中看到輸出亂碼，通常是因為 PowerShell 的輸出編碼設定問題。建議在您的 PowerShell 終端機執行：
-    ```powershell
-    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-    ```
-  - **檔案內容亂碼**：請確保您的原始程式碼檔案、`.env` 檔案皆以 **UTF-8 (不帶 BOM)** 格式儲存。
-  - 如果部署過程中出現逾時或連線失敗，請檢查 Plesk 的防火牆設定或確認 FTP 帳密是否正確。
+`scripts/deploy.cjs` 目前會略過這些名稱：
+- `.git`
+- `node_modules`
+- `skills`
+- `ftp-deploy`
+- `ftp-deploy.skill`
+- `package-lock.json`
+- `README.md`
+- `.env`
+- `migrate.php`
 
-## 資源與腳本
+另外，除了 `.htaccess` 以外，其他以 `.` 開頭的檔案也會被略過。
 
-此技能使用位於 `scripts/deploy.cjs` 的 Node.js 腳本執行上傳作業。
-- **主要庫**：`basic-ftp`, `dotenv`
+## 使用時的工作原則
+
+- 先確認目前工作目錄是不是使用者想部署的專案根目錄。
+- 先確認 `.env` 是否存在，再決定要不要執行部署。
+- 如果使用者沒有提供 FTP 帳密，不要自行假設真實值。
+- 如果使用者只說「幫我部署」，先檢查必要設定是否齊全。
+- 如果需要排查失敗原因，再讀 [references/deploy-checklist.md](references/deploy-checklist.md)。
+
+## 相關資源
+
+- 執行腳本：`scripts/deploy.cjs`
+- 環境變數範例：`assets/.env.example`
+- 檢查與排錯：`references/deploy-checklist.md`
