@@ -1,81 +1,53 @@
----
+﻿---
 name: mysql-db-manager
-description: 用於連接與操作 MySQL 或 MariaDB 資料庫。支援執行 SQL 查詢 (CRUD)、查看資料表結構及數據分析。適用於需要進行資料持久化或管理現有資料庫的任務。
+description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資料表檢查、Schema 檢視、查詢驗證與受控 SQL 操作。當 Codex 需要查看資料表、讀取資料、確認欄位結構、撰寫或執行 SQL，且資料庫連線資訊放在 `.env` 時使用此 skill。
 ---
 
-# MySQL 資料庫管理工具 (MySQL DB Manager)
+# MySQL 資料庫管理
 
-此技能讓 AI 能夠直接與您的 MySQL 或 MariaDB 資料庫互動。透過執行 SQL 指令，AI 可以讀取、寫入、修改或刪除資料，並協助您分析數據或調整資料庫結構。
+優先使用內建腳本，不要重寫資料庫連線程式。
 
-## 快速開始
+## 使用流程
 
-在使用此技能前，請確保已在技能目錄下的 `scripts/` 中安裝了必要套件 (`mysql2`, `dotenv`)，並且已正確設定環境變數。
+1. 確認 skill 根目錄存在 `.env`，且至少包含 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASS`、`DB_NAME`。
+2. 預設先做唯讀檢查，除非使用者明確要求寫入。
+3. 如果不確定資料表或欄位名稱，先查 Schema，不要猜。
+4. 從 `scripts/` 目錄執行 `execute-query.cjs`。
+5. 執行寫入或破壞性操作前，先說明風險與影響範圍。
 
-### 1. 設定連線資訊
-請在技能目錄下，或是專案根目錄下的 `.env` 檔案中設定以下變數（留白則代表該環境不開放）：
+## 執行指令
 
-```env
-# 主要環境 (MAIN)
-DB_MAIN_HOST=localhost
-DB_MAIN_PORT=3306
-DB_MAIN_USER=您的帳號
-DB_MAIN_PASS=您的密碼
-DB_MAIN_NAME=您的資料庫名稱
+在 `skills/mysql-db-manager/scripts/` 目錄執行：
 
-# 測試環境 (TEST) - 可選
-DB_TEST_HOST=
-...
-
-# 開發環境 (DEV) - 可選
-DB_DEV_HOST=
-...
+```bash
+node execute-query.cjs "SHOW TABLES"
+node execute-query.cjs "DESCRIBE users"
+node execute-query.cjs "SELECT * FROM users LIMIT 20"
 ```
 
-### 2. 核心功能與指令
+只有在使用者明確要求時才執行寫入：
 
-AI 應透過 `run_shell_command` 在 `skills/mysql-db-manager/scripts/` 目錄下執行以下指令：
+```bash
+node execute-query.cjs "UPDATE users SET status = 'active' WHERE id = 1"
+node execute-query.cjs "DELETE FROM sessions WHERE expires_at < NOW() LIMIT 100"
+```
 
-- **執行 SQL 查詢 (預設為 MAIN)**:
-  ```bash
-  node execute-query.cjs "SELECT * FROM users LIMIT 5"
-  ```
-- **指定環境執行 (例如 TEST)**:
-  ```bash
-  node execute-query.cjs TEST "DESCRIBE users"
-  ```
-- **更新資料**:
-  ```bash
-  node execute-query.cjs DEV "UPDATE users SET status = 'active' WHERE id = 1"
-  ```
+## 安全規則
 
-## 安全規範 (重要)
+- 先用 `SELECT`、`SHOW`、`DESCRIBE`、`EXPLAIN`。
+- `UPDATE` 或 `DELETE` 預設必須有明確的 `WHERE` 條件，除非使用者清楚要求批次修改。
+- 不要執行 `DROP DATABASE`、`DROP TABLE`、`TRUNCATE` 或其他破壞性 DDL，除非使用者明確確認。
+- 探索資料時優先加上 `LIMIT`，避免一次抓太多資料。
+- 如果 Schema 不明，先查結構再寫 SQL。
 
-為了確保資料安全，AI 在操作資料庫時必須遵循以下原則：
+## 檔案說明
 
-1. **先查詢，後操作**: 在執行 `UPDATE` 或 `DELETE` 之前，必須先執行 `SELECT` 確認目標資料是否存在且符合預期。
-2. **嚴格條件**: 除非使用者明確要求，否則禁止執行不帶 `WHERE` 子句的 `UPDATE` 或 `DELETE`。
-3. **分頁查詢**: 對於大型資料表，一律加上 `LIMIT` 以避免過大的結果集導致記憶體溢出。本工具預設僅顯示前 50 筆。
-4. **禁止毀滅性指令**: 禁止執行 `DROP DATABASE` 或 `DROP TABLE`，除非使用者在當前對話中給予明確且重複的確認。
-5. **備份建議**: 在執行大規模修改前，建議提醒使用者先備份資料庫。
+- `scripts/execute-query.cjs`: 執行單一 SQL 並輸出 JSON 結果。
+- `scripts/db-client.cjs`: 讀取 `.env` 並建立 MySQL 連線池。
+- `assets/.env.example`: `.env` 範例檔。
 
-## 常用操作範例
+## 補充
 
-- **查詢所有資料表**: `node execute-query.cjs "SHOW TABLES"`
-- **建立新資料表**: `node execute-query.cjs "CREATE TABLE test (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100))"`
-- **插入資料**: `node execute-query.cjs "INSERT INTO users (username, email) VALUES ('testuser', 'test@example.com')"`
-
-## 注意事項 (編碼處理)
-
-- **中文字元支援**:
-  - 本技能已在連線配置中強制使用 `charset: 'utf8mb4'`，並在 Windows 環境下自動執行 `chcp 65001` 以支援 UTF-8。
-  - **Gemini CLI 自動執行時**: 若在對話視窗中看到資料庫內容顯示為亂碼，建議在 PowerShell 執行：
-    ```powershell
-    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-    ```
-  - **資料庫編碼**: 請確保您的資料庫與資料表本身也設定為 `utf8mb4_unicode_ci` 或 `utf8_general_ci` 以獲得最佳相容性。
-
-## 資源結構
-
-- `scripts/execute-query.cjs`: 主要執行入口，負責 SQL 執行與格式化輸出。
-- `scripts/db-client.cjs`: 底層連線邏輯，管理連線池。
-- `assets/.env.example`: 環境變數範本。
+- `execute-query.cjs` 最多只顯示前 50 筆結果。
+- 腳本會從 `scripts/` 的上一層尋找 `.env`。
+- 如果終端輸出出現亂碼，先把相關檔案改成 UTF-8 再繼續調整。
