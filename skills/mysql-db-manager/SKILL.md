@@ -1,6 +1,6 @@
 ﻿---
 name: mysql-db-manager
-description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資料表檢查、Schema 檢視、查詢驗證與受控 SQL 操作。當 Codex 需要查看資料表、讀取資料、確認欄位結構、撰寫或執行 SQL，且資料庫連線資訊放在 `.env` 時使用此 skill。
+description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資料庫查詢、資料表檢查、Schema/欄位檢視、資料讀取、資料驗證、SQL 撰寫與受控寫入。當使用者說「查資料庫」、「看資料表」、「確認欄位」、「查後台資料」、「幫我跑 SQL」、「確認這筆資料」、「檢查會員/訂單/文章/分類資料」、「比對資料」、「修正資料庫資料」或 Codex 需要依 `.env` 的 DB_HOST、DB_USER、DB_NAME 等設定讀取/修改 MySQL 資料時使用。優先用 `scripts/execute-query.cjs`，先做 SHOW/DESCRIBE/SELECT/EXPLAIN 等唯讀檢查，只有使用者明確要求才執行 UPDATE/DELETE/INSERT。
 ---
 
 # MySQL 資料庫管理
@@ -14,6 +14,8 @@ description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資�
 3. 如果不確定資料表或欄位名稱，先查 Schema，不要猜。
 4. 從 `scripts/` 目錄執行 `execute-query.cjs`。
 5. 執行寫入或破壞性操作前，先說明風險與影響範圍。
+
+常見觸發語意包括：查資料庫、看資料表、跑 SQL、確認欄位、查會員資料、查訂單資料、查文章或分類資料、比對資料、修正資料庫內容。
 
 ## 執行指令
 

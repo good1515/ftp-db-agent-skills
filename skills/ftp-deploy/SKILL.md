@@ -1,6 +1,6 @@
 ﻿---
 name: ftp-deploy
-description: 當使用者要把目前專案透過 FTP 部署到 Plesk 或傳到遠端網站目錄時使用。適用於「部署到 Plesk」、「上傳到 httpdocs」、「用 FTP 發佈網站」、「設定 .env 後執行 FTP 上傳」這類需求。此 skill 使用 `scripts/deploy.cjs`，依 `.env` 內的 FTP 設定，將目前工作目錄遞迴上傳到遠端 `httpdocs` 或指定資料夾。
+description: 使用內建 Node.js 腳本把目前專案透過 FTP/FTPS 部署、上傳、發布或同步到 Plesk、httpdocs、public_html 或遠端網站目錄。當使用者說「部署網站」、「網站上線」、「發佈到正式站」、「上傳到主機」、「同步到 Plesk」、「傳到 httpdocs」、「FTP 上傳」、「更新遠端網站檔案」、「設定 .env 後部署」或需要檢查 FTP 部署設定、遠端目錄、忽略清單與部署失敗原因時使用。此 skill 依 `.env` 的 FTP 設定執行 `scripts/deploy.cjs`，將專案根目錄遞迴上傳到遠端目錄；不適用於 SSH、Git、rsync、Docker 或雲端平台部署。
 ---
 
 # FTP 部署到 Plesk
@@ -8,8 +8,10 @@ description: 當使用者要把目前專案透過 FTP 部署到 Plesk 或傳到�
 這個 skill 用於把目前專案透過 FTP 上傳到 Plesk 網站空間。
 
 優先在這些情況使用：
+- 使用者說要「上線」、「發布」、「發佈」、「部署」、「同步」、「上傳」目前網站到遠端主機
 - 使用者明確提到 `Plesk`
 - 使用者要部署到 `httpdocs`
+- 使用者提到 `public_html`、正式站、測試站或遠端網站目錄
 - 使用者要用 `FTP` 上傳目前網站
 - 專案內已有 `.env`、FTP 帳號，或提到 FTP 主機帳密
 
