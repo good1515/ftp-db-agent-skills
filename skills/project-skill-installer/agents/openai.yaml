@@ -1,0 +1,4 @@
+interface:
+  display_name: "專案 Skill 安裝器"
+  short_description: "將 GitHub skills 安裝到目前專案資料夾"
+  default_prompt: "使用 $project-skill-installer 將 GitHub skills 安裝到目前專案。"

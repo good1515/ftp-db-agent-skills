@@ -7,6 +7,10 @@ description: 使用內建 Node.js 腳本把目前專案透過 FTP/FTPS 部署、
 
 這個 skill 用於把目前專案透過 FTP 上傳到 Plesk 網站空間。
 
+## 設定完成後的連線驗證
+
+當使用者表示已完成 `.env` 設定，先從專案根目錄執行 `node skills/ftp-deploy/scripts/test-connection.cjs`，只驗證 FTP 登入，不執行上傳或修改遠端檔案。成功時回報「FTP 連線成功」；失敗時先檢查 `.env` 路徑、欄位名稱、空白/引號、連接埠與 `FTP_SECURE` 格式，再視情況自行修正非敏感設定。
+
 優先在這些情況使用：
 - 使用者說要「上線」、「發布」、「發佈」、「部署」、「同步」、「上傳」目前網站到遠端主機
 - 使用者明確提到 `Plesk`

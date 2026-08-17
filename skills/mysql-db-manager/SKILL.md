@@ -7,6 +7,10 @@ description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資�
 
 優先使用內建腳本，不要重寫資料庫連線程式。
 
+## 設定完成後的連線驗證
+
+當使用者表示已完成 `.env` 設定，先從專案根目錄執行 `node skills/mysql-db-manager/scripts/test-connection.cjs`，只執行 `SELECT 1` 驗證連線，不修改資料。成功時回報「DB 連線成功」；失敗時先檢查 `.env` 路徑、欄位名稱、空白/引號、連接埠與資料庫名稱，再視情況自行修正非敏感設定。
+
 ## 使用流程
 
 1. 確認目前執行專案根目錄存在 `.env`，且至少包含 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASS`、`DB_NAME`；不可使用 skill 目錄內的 `.env`。
