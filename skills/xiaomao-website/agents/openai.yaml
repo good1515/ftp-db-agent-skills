@@ -1,0 +1,4 @@
+interface:
+  display_name: "小毛網站開發"
+  short_description: "小毛網站 PHP 前端開發與 CI3 架構實作規範"
+  default_prompt: "使用 $xiaomao-website 建立或修改小毛網站功能。"
