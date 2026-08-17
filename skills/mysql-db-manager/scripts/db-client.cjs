@@ -1,9 +1,20 @@
-﻿const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise');
+const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-const envPath = path.resolve(__dirname, '../.env');
-dotenv.config({ path: envPath });
+// 一律讀取執行指令時所在專案根目錄的 .env。
+// skills/mysql-db-manager/assets/.env.example 僅供參考，禁止作為正式設定來源。
+const projectRoot = process.cwd();
+const envPath = path.resolve(projectRoot, '.env');
+
+if (!fs.existsSync(envPath)) {
+  console.error(`找不到專案設定檔：${envPath}`);
+  console.error('請在目前專案根目錄建立 .env；skills/mysql-db-manager/assets/.env.example 僅為範例。');
+  process.exit(1);
+}
+
+dotenv.config({ path: envPath, override: true });
 
 async function createConnection() {
   const config = {

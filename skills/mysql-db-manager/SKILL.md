@@ -9,7 +9,7 @@ description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資�
 
 ## 使用流程
 
-1. 確認 skill 根目錄存在 `.env`，且至少包含 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASS`、`DB_NAME`。
+1. 確認目前執行專案根目錄存在 `.env`，且至少包含 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASS`、`DB_NAME`；不可使用 skill 目錄內的 `.env`。
 2. 預設先做唯讀檢查，除非使用者明確要求寫入。
 3. 如果不確定資料表或欄位名稱，先查 Schema，不要猜。
 4. 從 `scripts/` 目錄執行 `execute-query.cjs`。
@@ -19,19 +19,19 @@ description: 使用內建 Node.js 腳本連線到 MySQL 或 MariaDB，執行資�
 
 ## 執行指令
 
-在 `skills/mysql-db-manager/scripts/` 目錄執行：
+在專案根目錄執行：
 
 ```bash
-node execute-query.cjs "SHOW TABLES"
-node execute-query.cjs "DESCRIBE users"
-node execute-query.cjs "SELECT * FROM users LIMIT 20"
+node skills/mysql-db-manager/scripts/execute-query.cjs "SHOW TABLES"
+node skills/mysql-db-manager/scripts/execute-query.cjs "DESCRIBE users"
+node skills/mysql-db-manager/scripts/execute-query.cjs "SELECT * FROM users LIMIT 20"
 ```
 
 只有在使用者明確要求時才執行寫入：
 
 ```bash
-node execute-query.cjs "UPDATE users SET status = 'active' WHERE id = 1"
-node execute-query.cjs "DELETE FROM sessions WHERE expires_at < NOW() LIMIT 100"
+node skills/mysql-db-manager/scripts/execute-query.cjs "UPDATE users SET status = 'active' WHERE id = 1"
+node skills/mysql-db-manager/scripts/execute-query.cjs "DELETE FROM sessions WHERE expires_at < NOW() LIMIT 100"
 ```
 
 ## 安全規則
@@ -45,11 +45,11 @@ node execute-query.cjs "DELETE FROM sessions WHERE expires_at < NOW() LIMIT 100"
 ## 檔案說明
 
 - `scripts/execute-query.cjs`: 執行單一 SQL 並輸出 JSON 結果。
-- `scripts/db-client.cjs`: 讀取 `.env` 並建立 MySQL 連線池。
+- `scripts/db-client.cjs`: 只讀取目前專案根目錄的 `.env` 並建立 MySQL 連線池。
 - `assets/.env.example`: `.env` 範例檔。
 
 ## 補充
 
 - `execute-query.cjs` 最多只顯示前 50 筆結果。
-- 腳本會從 `scripts/` 的上一層尋找 `.env`。
+- 腳本只會從 `process.cwd()`（執行指令時的專案根目錄）尋找 `.env`；找不到時直接停止，不會回退讀取 skill 目錄或範例檔。
 - 如果終端輸出出現亂碼，先把相關檔案改成 UTF-8 再繼續調整。
