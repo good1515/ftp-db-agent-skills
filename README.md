@@ -14,7 +14,7 @@
 請對 AI 說：
 
 ```text
-請安裝 https://github.com/good1515/ftp-db-agent-skills 到目前專案
+請安裝 https://github.com/good1515/ftp-db-agent-skills 到目前專案 請先閱讀該 Repository 的 README、SKILL.md 與安裝腳本，優先使用 Repository 自己提供的安裝流程，不要使用 Codex 內建的 .system/skill-installer。 安裝後確認技能路徑、.env、.env.example 與 .gitignore，不要顯示任何密碼。
 ```
 
 AI 會在內部先閱讀 Repository 文件，再使用 Repository 自己提供的安裝流程，不得只安裝到全域目錄。
