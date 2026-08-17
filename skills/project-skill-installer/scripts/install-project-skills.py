@@ -96,6 +96,30 @@ def install(repository: Path, destination: Path) -> tuple[list[tuple[str, Path]]
     return installed, skipped
 
 
+def prepare_project_env(repository: Path, project_root: Path) -> list[str]:
+    """Preserve the example and create a placeholder project .env when safe."""
+    messages: list[str] = []
+    source_example = repository / ".env.example"
+    project_example = project_root / ".env.example"
+    project_env = project_root / ".env"
+
+    if not project_example.exists() and source_example.is_file():
+        shutil.copyfile(source_example, project_example)
+        messages.append(f"已補上設定範例：{project_example}")
+    elif project_example.exists():
+        messages.append(f"設定範例已存在，未覆蓋：{project_example}")
+
+    if not project_env.exists() and project_example.is_file():
+        shutil.copyfile(project_example, project_env)
+        messages.append(f"已建立待填寫設定檔：{project_env}")
+    elif project_env.exists():
+        messages.append(f"設定檔已存在，未覆蓋：{project_env}")
+    else:
+        messages.append("找不到 .env.example，因此未建立 .env。")
+
+    return messages
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="將 GitHub Repository 內的 skills 安裝到 Codex、Claude Code 或兩者的目前專案。")
     parser.add_argument("--url", required=True, help="GitHub Repository URL")
@@ -112,6 +136,7 @@ def main() -> int:
 
     try:
         owner, repo, ref = parse_github_url(args.url, args.ref)
+        project_root = Path.cwd().resolve()
         destinations: list[tuple[str, Path]] = []
         if args.platform in ("codex", "both"):
             destinations.append(("Codex", Path(args.dest).resolve() if args.dest else Path.cwd() / "skills"))
@@ -120,6 +145,7 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="project-skill-installer-") as temporary_name:
             repository = download_repository(owner, repo, ref, Path(temporary_name))
             results = [(platform, destination, *install(repository, destination)) for platform, destination in destinations]
+            env_messages = prepare_project_env(repository, project_root)
     except (OSError, ValueError, RuntimeError) as exc:
         print(f"安裝失敗：{exc}")
         return 1
@@ -136,8 +162,10 @@ def main() -> int:
             print("已跳過：")
             for item in skipped:
                 print(f"- {item}")
-    project_root = Path.cwd().resolve()
     env_path = project_root / ".env"
+    print("設定檔處理：")
+    for message in env_messages:
+        print(f"- {message}")
     print(f"目前專案根目錄：{project_root}")
     print(f"請立即編輯完整設定檔路徑：{env_path}")
     print("請填入 FTP 設定：FTP_HOST、FTP_USER、FTP_PASSWORD、FTP_PORT、FTP_SECURE、FTP_REMOTE_DIR。")

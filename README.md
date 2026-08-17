@@ -34,6 +34,8 @@ D:\your-project\.env
 
 `.env.example` 必須保留，僅作為設定範例；正式帳密填入同一個專案根目錄的 `.env`。
 
+如果目前專案缺少 `.env.example`，安裝器會嘗試從 GitHub Repository 根目錄補上；如果目前專案缺少 `.env`，會以 `.env.example` 建立一份待填寫的 `.env`。既有 `.env` 與 `.env.example` 都不會被覆蓋，來源 Repository 的真實 `.env` 也不會被複製。
+
 ## `.env` 設定
 
 FTP 設定：
