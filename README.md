@@ -17,6 +17,30 @@
 請安裝 https://github.com/good1515/ftp-db-agent-skills 到目前專案 請先閱讀該 Repository 的 README、SKILL.md 與安裝腳本，優先使用 Repository 自己提供的安裝流程，不要使用 Codex 內建的 .system/skill-installer。 安裝後確認技能路徑、.env、.env.example 與 .gitignore，不要顯示任何密碼。
 ```
 
+
+## `.env` 設定 可直接複製 修改後貼去 .env 或者跟 AI說(較不推薦)
+
+FTP 設定：
+
+```.env
+FTP_HOST=ftp.your-domain.com
+FTP_USER=your-ftp-username
+FTP_PASSWORD='your-ftp-password'
+FTP_PORT=21
+FTP_SECURE=false
+FTP_REMOTE_DIR=/httpdocs
+
+# MySQL/MariaDB 設定：
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=your_username
+DB_PASS='your_password'
+DB_NAME=your_database_name
+```
+
+如果使用者直接提供 FTP 或 DB 帳號密碼，AI 可以協助寫入目前專案的 `.env`，只更新指定欄位，不回顯密碼，也不會刪除或覆蓋 `.env.example`。
+
+## 安裝檢查
 AI 會在內部先閱讀 Repository 文件，再使用 Repository 自己提供的安裝流程，不得只安裝到全域目錄。
 
 完成後確認技能安裝到：
@@ -45,30 +69,6 @@ D:\your-project\.env
 
 如果目前專案缺少 `.env.example`，安裝器會嘗試從 GitHub Repository 根目錄補上；如果目前專案缺少 `.env`，會以 `.env.example` 建立一份待填寫的 `.env`。既有 `.env` 與 `.env.example` 都不會被覆蓋，來源 Repository 的真實 `.env` 也不會被複製。
 
-## `.env` 設定
-
-FTP 設定：
-
-```.env
-FTP_HOST=ftp.your-domain.com
-FTP_USER=your-ftp-username
-FTP_PASSWORD='your-ftp-password'
-FTP_PORT=21
-FTP_SECURE=false
-FTP_REMOTE_DIR=/httpdocs
-```
-
-MySQL/MariaDB 設定：
-
-```.env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=your_username
-DB_PASS='your_password'
-DB_NAME=your_database_name
-```
-
-如果使用者直接提供 FTP 或 DB 帳號密碼，AI 可以協助寫入目前專案的 `.env`，只更新指定欄位，不回顯密碼，也不會刪除或覆蓋 `.env.example`。
 
 ## 設定完成後的連線驗證
 
