@@ -20,9 +20,8 @@
 
 ## `.env` 設定 可直接複製 修改後貼去 .env 或者跟 AI說(較不推薦)
 
-FTP 設定：
-
 ```.env
+# FTP 設定：
 FTP_HOST=ftp.your-domain.com
 FTP_USER=your-ftp-username
 FTP_PASSWORD='your-ftp-password'
