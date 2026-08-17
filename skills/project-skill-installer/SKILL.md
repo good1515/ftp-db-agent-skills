@@ -1,72 +1,74 @@
 ---
 name: project-skill-installer
-description: 將 GitHub 上的 Agent Skills 安裝到目前專案，支援 Codex 的 skills 資料夾與 Claude Code 的 .claude/skills 資料夾。當使用者說「請安裝 GitHub 網址 到目前專案」、要自動辨識一個或多個 SKILL.md、避免覆蓋既有 skill，或需要安裝後驗證時使用。
+description: 將 GitHub Repository 內的 Agent Skills 安裝到目前專案，支援 Codex 的 skills 與 Claude Code 的 .claude/skills，並處理專案根目錄的 .env、.env.example 與 .gitignore。當使用者要求把 GitHub skills 安裝到目前專案、指定 Codex/Claude Code 平台，或需要安裝後檢查與 FTP/DB 設定驗證時使用。
 ---
 
 # 專案 Skill 安裝器
 
-## 目的
+## 適用指令
 
-處理下列自然語言指令：
-
-```text
-請安裝 https://github.com/good1515/ftp-db-agent-skills 到目前專案
-```
-
-將目前執行目錄視為專案根目錄，並把 GitHub Repository 內辨識到的 skill 安裝至 Codex 的 `目前專案/skills/<skill-name>` 與 Claude Code 的 `目前專案/.claude/skills/<skill-name>`。預設兩個平台都安裝；使用者指定平台時才安裝單一平台。不要直接修改全域 `~/.codex/skills` 或 `~/.claude/skills`，除非使用者明確要求全域安裝。
-
-## 執行流程
-
-1. 解析 GitHub Repository URL；未指定版本時使用 `main`。
-2. 將 Repository 下載至暫存目錄，不把暫存內容留在專案內。
-3. 自動尋找包含 `SKILL.md` 的 skill：Repository 根目錄有 `SKILL.md` 時視為單一 skill；否則檢查其子目錄，排除 `.git`、`node_modules`、暫存與建置目錄。
-4. 將每個 skill 安裝至目前專案的 `skills/<skill-name>`。
-5. 若目標目錄已存在，跳過該平台的該項安裝並提示，不覆蓋、不刪除、不合併既有內容。
-6. 若目前專案沒有 `.env.example`，且來源 Repository 根目錄有 `.env.example`，複製一份到目前專案根目錄；若目前專案沒有 `.env`，以 `.env.example` 建立待填寫的 `.env`。
-7. 不覆蓋既有 `.env` 或 `.env.example`，不複製來源 Repository 的真實 `.env`，不把任何密碼寫入新檔案。
-8. 安裝後檢查 `SKILL.md` 的 frontmatter 與 skill 名稱；可用時執行 `quick_validate.py`。
-9. 安裝完成後，第一時間用繁體中文列出目前專案根目錄與 `.env` 的完整絕對路徑，並通知使用者填入 FTP 與資料庫設定欄位。
-10. 再回報安裝結果、實際路徑、驗證結果與跳過項目；不要要求使用者把帳號密碼貼到對話中。
-11. 安裝後確認每個 skill 的實際路徑、專案根目錄的 `.env`、`.env.example` 與 `.gitignore` 是否排除 `.env`；不得顯示任何密碼。
-9. 使用者回覆「已設定好」或相近意思後，優先執行 FTP 與 DB 連線驗證；成功時分別回報「FTP 連線成功」與「DB 連線成功」。
-10. 連線失敗時，先自行檢查並修正可安全處理的問題，例如 `.env` 完整路徑、欄位拼寫、前後空白、引號、數字格式、布林值格式與非敏感預設值；不要猜測、替換或顯示帳號密碼。
-11. 如果使用者直接提供 FTP 或 DB 帳號密碼，將使用者明確提供的值寫入目前專案完整路徑的 `.env`，只更新對應欄位；`.env` 不存在時可依 `.env.example` 建立，但必須保留 `.env.example`。
-12. 寫入帳號密碼後立即執行 FTP 與 DB 連線驗證；回覆只能顯示成功/失敗與脫敏錯誤，不得回顯密碼、完整連線字串或機密環境變數。
-13. 寫入前後檢查 `.gitignore` 是否排除 `.env`；不要把 `.env` 加入 Git、提交或推送。若未排除，先提醒並在不影響其他規則的前提下補上 `.env` 排除規則。
-
-## 使用方式
-
-只需對 AI 說：
+處理例如：
 
 ```text
 請安裝 https://github.com/good1515/ftp-db-agent-skills 到目前專案
 ```
 
-安裝器會在背後自動辨識 Repository 內的 skills，並同時安裝至 Codex 的 `skills` 與 Claude Code 的 `.claude/skills`；使用者不需要執行 Python 指令或指定安裝路徑。
+將目前工作目錄視為專案根目錄。預設同時安裝到：
 
-安裝完成後必須立即提醒使用者編輯完整絕對路徑：
+- Codex：`<專案根目錄>/skills/<skill-name>`
+- Claude Code：`<專案根目錄>/.claude/skills/<skill-name>`
 
-```text
-<目前專案根目錄的絕對路徑>/.env
-```
+使用者明確指定平台時，只安裝到指定平台。不要安裝到全域 `~/.codex/skills` 或 `~/.claude/skills`，除非使用者明確要求。
 
-FTP 欄位：`FTP_HOST`、`FTP_USER`、`FTP_PASSWORD`、`FTP_PORT`、`FTP_SECURE`、`FTP_REMOTE_DIR`。
+## 安裝流程
 
-資料庫欄位：`DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASS`、`DB_NAME`。
+1. 先閱讀來源 Repository 的 `README`、所有相關 `SKILL.md` 與安裝腳本，優先使用來源 Repository 提供的安裝流程；不要使用 Codex 內建的 `.system/skill-installer`。
+2. 使用來源 Repository 的安裝腳本下載指定的 GitHub Repository。未指定版本時使用 `main`；只接受 `https://github.com/<owner>/<repo>` Repository 根網址。
+3. 讓腳本在暫存目錄中處理下載內容，完成或失敗後清理暫存檔，不把暫存內容留在目前專案內。
+4. 自動尋找包含 `SKILL.md` 的 skill：Repository 根目錄有 `SKILL.md` 時視為單一 skill，否則搜尋子目錄；排除 `.git`、`node_modules`、`__pycache__`、`.venv`、`dist` 與 `build`。
+5. 只複製 skill 目錄，不把整個 Repository 當成 skill。依 `SKILL.md` frontmatter 的 `name` 決定目標目錄；拒絕不符合小寫英數字與連字號規則的名稱。
+6. 目標已有同名 skill 時跳過該平台的該項目，不覆蓋、刪除或合併既有內容。
+7. 若專案根目錄沒有 `.env.example`，且來源 Repository 根目錄有 `.env.example`，複製一份補上；若已有則保留，不覆蓋。
+8. 若專案根目錄沒有 `.env`，以專案根目錄的 `.env.example` 建立待填寫檔案；若已有則保留，不覆蓋。不要複製來源 Repository 的真實 `.env`。
+9. 安裝失敗、找不到 `SKILL.md` 或驗證失敗時停止，使用繁體中文說明原因，不要假裝安裝成功。
 
-使用者回覆已設定完成後，優先驗證兩項連線。FTP 只執行登入驗證；DB 只執行 `SELECT 1`。兩者都成功時明確回報：`FTP 連線成功；DB 連線成功`。任一失敗時，先自行處理非敏感的格式或路徑問題，再回報具體錯誤與仍需使用者確認的項目。
+如果來源 Repository 沒有根目錄 `.env.example`，且目前專案也沒有 `.env.example`，不要自行產生含真實設定的檔案；說明未建立 `.env` 的原因。
 
-如果使用者直接在訊息中提供設定值，立即將明確提供的欄位寫入上述 `.env` 完整路徑，再執行相同連線驗證；不要把密碼重新貼回回覆。
+## 安裝後檢查與回報
+
+完成安裝後，先用繁體中文列出：
+
+- 目前專案根目錄的完整絕對路徑
+- `.env` 的完整絕對路徑
+- 每個已安裝 skill 的實際絕對路徑
+- 已跳過的同名 skill 與原因
+- `.env`、`.env.example` 是否存在
+- `.gitignore` 是否排除 `.env`
+
+若 `.gitignore` 尚未排除 `.env`，在不影響既有規則的前提下補上；不要將 `.env` 加入 Git、提交或推送。安裝後可使用環境提供的 `quick_validate.py` 檢查各 skill 的 frontmatter 與名稱；沒有該工具時，至少人工確認 `SKILL.md` 與 Codex 專用的 `agents/openai.yaml`（若存在）。
+
+立即提醒使用者編輯專案根目錄的 `.env`，只列出欄位名稱，不顯示或要求貼出設定值：
+
+- FTP：`FTP_HOST`、`FTP_USER`、`FTP_PASSWORD`、`FTP_PORT`、`FTP_SECURE`、`FTP_REMOTE_DIR`
+- MySQL/MariaDB：`DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASS`、`DB_NAME`
+
+不要求使用者執行 Python 安裝指令；安裝器內部可使用 Python 腳本，但對使用者只提供自然語言操作方式。
+
+## 設定完成後的連線驗證
+
+使用者回覆「已設定好」或相近意思後，優先執行唯讀驗證：
+
+- FTP：只驗證登入，不上傳或修改遠端檔案；成功時回報 `FTP 連線成功`。
+- DB：只執行 `SELECT 1`，不修改資料；成功時回報 `DB 連線成功`。
+
+失敗時先自行檢查並修正安全且非敏感的問題，例如 `.env` 完整路徑、欄位名稱、前後空白、引號、連接埠、數字格式、布林值與非敏感預設值。帳號密碼錯誤、主機拒絕連線或需要外部權限時，再請使用者確認。回報只顯示成功/失敗與脫敏錯誤，不顯示密碼、完整連線字串或其他機密環境變數。
+
+如果使用者直接提供 FTP 或 DB 設定值，只將明確提供的欄位寫入目前專案根目錄的 `.env`；`.env` 不存在時可依 `.env.example` 建立，但必須保留 `.env.example`。寫入前後確認 `.gitignore` 排除 `.env`，寫入後立即執行相同連線驗證；不要回顯密碼。
 
 ## 安全規則
 
-- 不覆蓋同名 skill，也不對現有目錄執行刪除或清空。
-- 只接受 Repository 內的相對路徑；拒絕路徑穿越與壓縮檔寫出暫存目錄。
-- 下載與複製完成前使用暫存目錄，完成或失敗後清理暫存檔。
-- 只複製包含 `SKILL.md` 的 skill 資料夾，不把整個 Repository 當成 skill。
-- `SKILL.md` 是 Codex 與 Claude Code 共通的技能核心；Codex 專用的 `agents/openai.yaml` 可保留，Claude Code 會忽略不需要的額外 metadata。
-- 不讀取、不提交、不顯示任何 `.env`、金鑰、權杖或其他機密檔案內容。
-- 安裝完成通知只指出 `.env` 路徑與欄位名稱，不輸出設定值，也不要求使用者在對話中提供密碼。
-- 安裝流程不得刪除或覆蓋目前專案的 `.env.example`；若缺少且來源有範例，應複製來源範例補齊。
-- 若目前專案沒有 `.env`，應由 `.env.example` 建立待填寫的 `.env`，並在回報中列出完整絕對路徑。
-- 遇到網路錯誤、沒有找到 skill 或驗證失敗時停止並以繁體中文說明，不假裝安裝成功。
+- 只處理使用者指定的 GitHub Repository 與目前專案，不擴大安裝範圍。
+- 防止壓縮檔路徑穿越；只使用 Repository 內的相對路徑。
+- 不讀取、不提交、不顯示 `.env`、金鑰、權杖或其他機密檔案內容。
+- 不覆蓋、刪除或清空既有 skill、`.env` 或 `.env.example`。
+- 所有回覆、錯誤說明與版本資訊使用繁體中文。
