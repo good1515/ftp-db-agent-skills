@@ -6,7 +6,7 @@ import runpy
 
 
 def main() -> None:
-    script = Path(__file__).resolve().parents[2] / "project-skill-installer" / "scripts" / "install-project-skills.py"
+    script = Path(__file__).resolve().parent / "install-project-skills.py"
     if not script.is_file():
         raise SystemExit(f"找不到專案安裝器：{script}")
     runpy.run_path(str(script), run_name="__main__")
