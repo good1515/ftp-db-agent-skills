@@ -11,13 +11,15 @@
 
 ## 安裝到目前專案
 
-只要對 AI 說：
+請對 AI 說：
 
 ```text
 請安裝 https://github.com/good1515/ftp-db-agent-skills 到目前專案
 ```
 
-安裝器會自動尋找 Repository 內的 `SKILL.md`，並安裝到目前專案：
+AI 會在內部先閱讀 Repository 文件，再使用 Repository 自己提供的安裝流程，不得只安裝到全域目錄。
+
+完成後確認技能安裝到：
 
 ```text
 Codex：       <專案根目錄>\skills\<skill-name>
@@ -25,6 +27,13 @@ Claude Code： <專案根目錄>\.claude\skills\<skill-name>
 ```
 
 兩個平台共用同一份 `SKILL.md`。Codex 專用的 `agents/openai.yaml` 可以保留，Claude Code 會忽略不需要的額外 metadata。已存在的同名 skill 會跳過，不會覆蓋或刪除。
+
+安裝後確認：
+
+- 技能實際安裝路徑
+- 專案根目錄的 `.env`
+- 專案根目錄的 `.env.example`
+- `.gitignore` 是否排除 `.env`
 
 安裝完成後，AI 會立即列出目前專案 `.env` 的完整絕對路徑，例如：
 
